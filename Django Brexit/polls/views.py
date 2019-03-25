@@ -16,7 +16,7 @@ def index(request):
         brexit = datetime.datetime(2019,3,29)
         now = datetime.datetime.now()
         time_till_brexit = brexit - now
-        time = strfdelta(time_till_brexit,"{hours} hours, {minutes} and {seconds} to go")
+        time = strfdelta(time_till_brexit,"{hours} hours, {minutes} minutes and {seconds} seconds to go")
         #time =  '%s Hours : %s Minutes : %s Seconds' % (time_till_brexit.Hour, time_till_brexit.minutes, time_till_brexit.seconds)
         return render(request, 'polls/index.html', {'time': time})
 
