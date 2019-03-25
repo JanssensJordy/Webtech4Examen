@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import edu.ap.spring.jpa.BlockChainModel;
+import edu.ap.spring.jpa.BlockChainRepository;
 import edu.ap.spring.service.Block;
 import edu.ap.spring.service.BlockChain;
 import edu.ap.spring.service.Wallet;
@@ -24,6 +26,9 @@ import edu.ap.spring.transaction.Transaction;
 
 @Controller
 public class BlockChainController {
+    @Autowired
+    private BlockChainRepository BChainRepository;
+    
     @Autowired
 	private BlockChain bChain;
 	@Autowired
@@ -51,6 +56,10 @@ public class BlockChainController {
 
         map.put("walletA",walletA);
         map.put("walletB", walletB);
+        BlockChain lastBlockChain = BChainRepository.findFirstByOrderByIdDesc();
+        if(lastBlockChain != null && lastBlockChain.isChainValid()){
+            bChain = lastBlockChain;
+        }
 	}
     
 
@@ -85,7 +94,7 @@ public class BlockChainController {
 		} 
 		catch(Exception e) {}
 		bChain.addBlock(block);
-
+        BChainRepository.save(new BlockChainModel(bChain.toJSON()));
          return "transactionsuccesfull";
     }
  }
