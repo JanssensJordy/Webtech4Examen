@@ -68,15 +68,24 @@ public class BlockChainController {
         return "balance";
     }
 
-//     @PostMapping("/sendFunds")
-//     public String sendFunds(@RequestParam("from") String from, @RequestParam("to") String to,
-//             @RequestParam("amount") Float amount) {
-//         Wallet senderWallet = bChain.getWalletFromKey(from);
-//         Wallet receiverWallet = bChain.getWalletFromKey(to);
-//         try{
-//             bChain.block1.addTransaction(senderWallet.sendFunds(receiverWallet.publicKey, amount), bChain.bChain);
-//         }catch(Exception e){}
-//         bChain.bChain.addBlock(bChain.block1);
-//         return "redirect:/";
-//     }
+    @GetMapping("/transaction")
+    public String transactionForm(Model model) {
+        return "transaction";
+    }
+    
+     @PostMapping("/transaction")
+     public String sendFunds(@RequestParam("wallet1") String wallet1, @RequestParam("wallet2") String wallet2,
+             @RequestParam("amount") Float amount) {
+         Wallet senderWallet = this.map.get(wallet1);
+         Wallet receiverWallet = this.map.get(wallet2);
+         Block block = new Block();
+		block.setPreviousHash(bChain.getLastHash());
+		try {
+			block.addTransaction(senderWallet.sendFunds(receiverWallet.getPublicKey(), amount), bChain);
+		} 
+		catch(Exception e) {}
+		bChain.addBlock(block);
+
+         return "transactionsuccesfull";
+    }
  }
