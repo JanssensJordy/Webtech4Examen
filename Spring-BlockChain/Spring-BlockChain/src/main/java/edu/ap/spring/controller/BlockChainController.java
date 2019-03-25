@@ -4,6 +4,8 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import edu.ap.spring.service.Block;
 import edu.ap.spring.service.BlockChain;
 import edu.ap.spring.service.Wallet;
 import edu.ap.spring.transaction.Transaction;
@@ -25,7 +28,8 @@ public class BlockChainController {
 	private BlockChain bChain;
 	@Autowired
 	private Wallet coinbase, walletA, walletB;
-	private Transaction genesisTransaction;
+    private Transaction genesisTransaction;
+    private Map<String, Wallet> map = new HashMap<String, Wallet>();
 
 	@PostConstruct
 	public void init() {
@@ -43,7 +47,10 @@ public class BlockChainController {
 		Block genesis = new Block();
 		genesis.setPreviousHash("0");
 		genesis.addTransaction(genesisTransaction, bChain);
-		bChain.addBlock(genesis);
+        bChain.addBlock(genesis);
+
+        map.put("walletA",walletA);
+        map.put("walletB", walletB);
 	}
     
 
@@ -52,34 +59,24 @@ public class BlockChainController {
         return "index";
     }
 
-    @PostMapping("/")
-    public String getIndex(Model model) {
-        return "index";
-    }
-
-    @PostMapping("/init")
-    public String init(Model model){
-        bChain.setUp();
-        return "index";
-    }
-
-    @PostMapping("/balance")
-    public String balance(@RequestParam("walletKey") String key, Model model) {
-        Wallet wallet = bChain.getWalletFromKey(key);
+    @GetMapping("/balance/{walletName}")
+    public String balance(@PathVariable("walletName") String walletName, Model model) {
+        Wallet wallet = this.map.get(walletName);
         float balance = wallet.getBalance();
+        model.addAttribute("walletName", walletName);
         model.addAttribute("balance",balance);
         return "balance";
     }
 
-    @PostMapping("/sendFunds")
-    public String sendFunds(@RequestParam("from") String from, @RequestParam("to") String to,
-            @RequestParam("amount") Float amount) {
-        Wallet senderWallet = bChain.getWalletFromKey(from);
-        Wallet receiverWallet = bChain.getWalletFromKey(to);
-        try{
-            bChain.block1.addTransaction(senderWallet.sendFunds(receiverWallet.publicKey, amount), bChain.bChain);
-        }catch(Exception e){}
-        bChain.bChain.addBlock(bChain.block1);
-        return "redirect:/";
-    }
-}
+//     @PostMapping("/sendFunds")
+//     public String sendFunds(@RequestParam("from") String from, @RequestParam("to") String to,
+//             @RequestParam("amount") Float amount) {
+//         Wallet senderWallet = bChain.getWalletFromKey(from);
+//         Wallet receiverWallet = bChain.getWalletFromKey(to);
+//         try{
+//             bChain.block1.addTransaction(senderWallet.sendFunds(receiverWallet.publicKey, amount), bChain.bChain);
+//         }catch(Exception e){}
+//         bChain.bChain.addBlock(bChain.block1);
+//         return "redirect:/";
+//     }
+ }
